@@ -1,12 +1,9 @@
 package com.emotibot.clustingLog.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,22 +12,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.emotibot.clustingLog.common.constants.Constants;
 import com.emotibot.clustingLog.common.element.Element;
 import com.emotibot.clustingLog.common.element.LogTagEle;
+import com.emotibot.clustingLog.nlp.NlpUtils;
 import com.emotibot.clustingLog.step.ClustingLogStep;
 import com.emotibot.clustingLog.step.TagLogStep;
 import com.emotibot.clustingLog.task.LogSelectType;
+import com.emotibot.clustingLog.utils.XlsUtils;
 import com.emotibot.middleware.conf.ConfigManager;
 import com.emotibot.middleware.context.Context;
 import com.emotibot.middleware.utils.StringUtils;
-
-import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * 将结果输出到xls中
@@ -41,16 +34,17 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class ClustingServiceImpl implements ClustingService
 {
-    private static final int MAX_LOG_NUM = 100000;
-    private static final int LOG_COLUME = 5;
-    private static final int OUTPUT_COLUME = 4;
-    private static final String EMPTY_OUTPUT = "{}";
     private static final Logger logger = Logger.getLogger(ClustingServiceImpl.class);
-    
     
     private ExecutorService executorService = Executors.newFixedThreadPool(100);
     private ClustingLogStep clustingLogStep = new ClustingLogStep(executorService);
     private TagLogStep tagLogStep = new TagLogStep(executorService);
+    private String outputXls = ConfigManager.INSTANCE.getPropertyString(Constants.CLUSTING_LOG_XLS_FILE_KEY);
+    
+    public ClustingServiceImpl()
+    {
+        init();
+    }
     
     @SuppressWarnings("unchecked")
     @Override
@@ -58,7 +52,7 @@ public class ClustingServiceImpl implements ClustingService
     {
         logger.info("");
         logger.info("-------------- start -------------");
-        Set<String> sentences = loadLogFromXls(csvFile);
+        Set<String> sentences = XlsUtils.loadLogFromXls(csvFile);
         if (sentences == null || sentences.isEmpty())
         {
             return null;
@@ -72,124 +66,6 @@ public class ClustingServiceImpl implements ClustingService
         logger.info("-------------- end -------------");
         logger.info("");
         return (List<Set<String>>)context.getValue(Constants.CLUSTING_LOG_RESULT_KEY);
-    }
-    
-    @SuppressWarnings("unused")
-    private Set<String> loadLogFromCsv(String csvFile)
-    {
-        File file = new File(csvFile);
-        FileReader fReader = null; 
-        CSVReader csvReader = null;
-        try
-        {
-            fReader = new FileReader(file);  
-            csvReader = new CSVReader(fReader); 
-            Set<String> sentences = new HashSet<String>();
-            List<String[]> list = csvReader.readAll();
-            int count = 0;
-            for (String[] ss : list)
-            {
-                String sentence = ss[LOG_COLUME];
-                if (!StringUtils.isEmpty(sentence) && !sentences.contains(sentence))
-                {
-                    sentences.add(sentence);
-                    count ++;
-                    if (count > MAX_LOG_NUM)
-                    {
-                        break;
-                    }
-                }
-            }
-            return sentences;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
-        finally
-        {
-            try
-            {
-                csvReader.close();
-                fReader.close();
-            } 
-            catch (IOException e)
-            {
-                
-            }
-        }
-    }
-    
-    @SuppressWarnings("unused")
-    private Set<String> loadLogFromXls(String xlsFile)
-    {
-        InputStream is = null;
-        XSSFWorkbook xssfWorkbook = null;
-        try
-        {
-            Set<String> sentences = new HashSet<String>();
-            is = new FileInputStream(xlsFile);
-            xssfWorkbook = new XSSFWorkbook(is);
-            XSSFSheet xssfSheet = xssfWorkbook.getSheetAt(0);
-            if (xssfSheet == null)
-            {
-                return null;
-            }
-            int count = 0;
-            for (int i = 1; i <= xssfSheet.getLastRowNum(); i ++)
-            {
-                XSSFRow xssfRow = xssfSheet.getRow(i);
-                if (xssfRow != null)
-                {
-                    XSSFCell output = xssfRow.getCell(OUTPUT_COLUME);
-                    String outputStr = output.getStringCellValue();
-                    if (EMPTY_OUTPUT.equals(outputStr))
-                    {
-                        XSSFCell sentenceCell = xssfRow.getCell(LOG_COLUME);
-                        int cellType = sentenceCell.getCellType();
-                        String sentence = null;
-                        switch(cellType)
-                        {
-                        case XSSFCell.CELL_TYPE_NUMERIC:
-                            sentence = String.valueOf(sentenceCell.getNumericCellValue());
-                            break;
-                        case XSSFCell.CELL_TYPE_STRING:
-                            sentence = sentenceCell.getStringCellValue();
-                            break;
-                        default:
-                            break;    
-                        }
-                        if (!StringUtils.isEmpty(sentence) && !sentences.contains(sentence))
-                        {
-                            sentences.add(sentence);
-                            count ++;
-                            if (count > MAX_LOG_NUM)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return sentences;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
-        finally
-        {
-            try
-            {
-                is.close();
-            } 
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
     }
     
     @SuppressWarnings("unchecked")
@@ -217,12 +93,49 @@ public class ClustingServiceImpl implements ClustingService
         //TOO_MANNY_M
         List<Element> tooManyMList = summarySelectMap.get(LogSelectType.TOO_MANNY_M);
         context.setValue(Constants.CLUSTING_LOG_TOO_MANNY_M_KEY, tooManyMList);
-        //WITHOUT_VECTOR_WITH_NUD
+        //WITHOUT_VECTOR_WITH_NUD 需要根据NUD进行分类后再输出
         List<Element> withoutVectorWithNudList = summarySelectMap.get(LogSelectType.WITHOUT_VECTOR_WITH_NUD);
-        context.setValue(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, withoutVectorWithNudList);
+        Map<String, List<Element>> withoutVectorWithNudMap = new HashMap<String, List<Element>>();
+        for (Element element : withoutVectorWithNudList)
+        {
+            String nudLevelInfo = element.getSegmentLevelInfo();
+            if (!StringUtils.isEmpty(nudLevelInfo))
+            {
+                List<Element> elements = withoutVectorWithNudMap.get(nudLevelInfo);
+                if (elements == null)
+                {
+                    elements = new ArrayList<Element>();
+                    withoutVectorWithNudMap.put(nudLevelInfo, elements);
+                }
+                elements.add(element);
+            }
+        }
+        context.setValue(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, withoutVectorWithNudMap);
         //WITHOUT_VECTOR_WITHOUT_NUD
         List<Element> withoutVectorWithoutNudList = summarySelectMap.get(LogSelectType.WITHOUT_VECTOR_WITHOUT_NUD);
         context.setValue(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY, withoutVectorWithoutNudList);
+    }
+    
+    private void init()
+    {
+        NlpUtils.test();
+        int count = 0;
+        while (count < Constants.CLUSTING_SERVICE_INIT_NUM)
+        {
+            if (NlpUtils.isNlpReady())
+            {
+                break;
+            }
+            try
+            {
+                Thread.sleep(Constants.CLUSTING_SERVICE_INIT_INTERVAL);
+            } 
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+                return;
+            }
+        }
     }
     
     private void getLogTag(Context context)
@@ -267,18 +180,67 @@ public class ClustingServiceImpl implements ClustingService
      * @param context
      */
     private void storeOutput(Context context)
-    {
-        storeClustingLog(context, Constants.CLUSTING_LOG_OUTPUT_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_SHORT_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_LONG_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_WITHOUT_V_N_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_TOO_MANNY_M_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY);
-        storeClustingLog1(context, Constants.CLUSTING_LOG_DROP_KEY);
-        storeClustingLogType(context, Constants.CLUSTING_LOG_TYPE_KEY);
+    {   
+        Map<String, List<String>> logsMap = new HashMap<String, List<String>>();
+        
+        List<String> logs = getClustingLog(context, Constants.CLUSTING_LOG_OUTPUT_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_OUTPUT_KEY, logs);
+        }
+        
+        logs = getClustingLog1(context, Constants.CLUSTING_LOG_SHORT_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_SHORT_KEY, logs);
+        }
+        
+        logs = getClustingLog1(context, Constants.CLUSTING_LOG_LONG_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_LONG_KEY, logs);
+        }
+        
+        logs = getClustingLog1(context, Constants.CLUSTING_LOG_WITHOUT_V_N_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_WITHOUT_V_N_KEY, logs);
+        }
+        
+        logs = getClustingLog1(context, Constants.CLUSTING_LOG_TOO_MANNY_M_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_TOO_MANNY_M_KEY, logs);
+        }
+        
+        logs = getClustingLog2(context, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, logs);
+        }
+        
+        logs = getClustingLog1(context, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY, logs);
+        }
+        
+        logs = getClustingLog1(context, Constants.CLUSTING_LOG_DROP_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_DROP_KEY, logs);
+        }
+        
+        logs = getClustingLogType(context, Constants.CLUSTING_LOG_TYPE_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_TYPE_KEY, logs);
+        }
+        
+        XlsUtils.writeLogForXls(outputXls, logsMap);
     }
     
+    @SuppressWarnings("unused")
     private String getStoreFile(String containKey)
     {
         String filePathKey = null;
@@ -320,13 +282,13 @@ public class ClustingServiceImpl implements ClustingService
     }
     
     @SuppressWarnings("unchecked")
-    private void storeClustingLog(Context context, String key)
+    private List<String> getClustingLog(Context context, String key)
     {
         List<String> outputLog = new ArrayList<String>();
         List<Set<Element>> clusterLog = (List<Set<Element>>) context.getValue(key);
         if (clusterLog == null)
         {
-            return;
+            return null;
         }
         String filePath = getStoreFile(key);
         for (int i = 0; i < clusterLog.size(); i ++)
@@ -334,20 +296,21 @@ public class ClustingServiceImpl implements ClustingService
             Set<Element> logs = clusterLog.get(i);
             for (Element log : logs)
             {
-                outputLog.add(i + ": " + log.getText());
+                outputLog.add(i + Constants.CLUSTING_LOG_SPLIT_KEY + log.getText());
             }
         }
         storeFile(outputLog, filePath);
+        return outputLog;
     }
     
     @SuppressWarnings("unchecked")
-    private void storeClustingLog1(Context context, String key)
+    private List<String> getClustingLog1(Context context, String key)
     {
         List<String> outputLog = new ArrayList<String>();
         List<Element> clusterLog = (List<Element>) context.getValue(key);
         if (clusterLog == null)
         {
-            return;
+            return null;
         }
         String filePath = getStoreFile(key);
         for (int i = 0; i < clusterLog.size(); i ++)
@@ -355,16 +318,45 @@ public class ClustingServiceImpl implements ClustingService
             outputLog.add(clusterLog.get(i).getText());
         }
         storeFile(outputLog, filePath);
+        return outputLog;
+        
     }
     
     @SuppressWarnings("unchecked")
-    private void storeClustingLogType(Context context, String key)
+    private List<String> getClustingLog2(Context context, String key)
+    {
+        List<String> outputLog = new ArrayList<String>();
+        Map<String, List<Element>> clusterLogMap = (Map<String, List<Element>>) context.getValue(key);
+        if (clusterLogMap == null)
+        {
+            return null;
+        }
+        String filePath = getStoreFile(key);
+        for (Map.Entry<String, List<Element>> entry : clusterLogMap.entrySet())
+        {
+            List<Element> elements = entry.getValue();
+            if (elements == null)
+            {
+                continue;
+            }
+            String levelInfo = entry.getKey();
+            for (Element element : elements)
+            {
+                outputLog.add(levelInfo + Constants.CLUSTING_LOG_SPLIT_KEY + element.getText()); 
+            }
+        }
+        storeFile(outputLog, filePath);
+        return outputLog;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<String> getClustingLogType(Context context, String key)
     {
         List<String> outputLog = new ArrayList<String>();
         List<LogTagEle> clusterLogTag = (List<LogTagEle>) context.getValue(key);
         if (clusterLogTag == null)
         {
-            return;
+            return null;
         }
         String filePath = getStoreFile(key);
         for (int i = 0; i < clusterLogTag.size(); i ++)
@@ -372,8 +364,10 @@ public class ClustingServiceImpl implements ClustingService
             outputLog.add(i + ": " + clusterLogTag.get(i));
         }
         storeFile(outputLog, filePath);
+        return outputLog;
     }
     
+    @SuppressWarnings("unused")
     private void storeFile(List<String> lines, String fileName)
     {
         FileWriter fw = null;

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.emotibot.middleware.response.nlu.Segment;
 import com.emotibot.middleware.utils.JsonUtils;
+import com.emotibot.middleware.utils.StringUtils;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -61,6 +62,22 @@ public class Element
     public List<Segment> getSegments()
     {
         return this.segments;
+    }
+    
+    public String getSegmentLevelInfo()
+    {
+        if (segments == null)
+        {
+            return null;
+        }
+        for (Segment segment : segments)
+        {
+            if (!StringUtils.isEmpty(segment.getLevelInfo()))
+            {
+                return segment.getLevelInfo();
+            }
+        }
+        return null;
     }
     
     @Override

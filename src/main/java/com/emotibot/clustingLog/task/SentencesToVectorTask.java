@@ -157,23 +157,8 @@ public class SentencesToVectorTask extends AbstractTask
                 {
                     sentenceVector = initSentenceVector(vector.length);
                 }
-                float rate = 1.0f;
-                if (WordUtils.isVerb(segment.getPos()))
-                {
-                    rate = Constants.ADJUST_VERB_RATE;
-                }
-                else if (WordUtils.isNoun(segment.getPos()))
-                {
-                    rate = Constants.ADJUST_NONE_RATE;
-                }
-                else if (WordUtils.isModal(segment.getPos()))
-                {
-                    rate = Constants.ADJUST_MODAL_RATE;
-                }
-                else if (WordUtils.isPronoun(segment.getPos()))
-                {
-                    rate = Constants.ADJUST_PRONOUN_RATE;
-                }
+                float rate = WordUtils.getAdjustRate(segment.getPos());
+                
                 for (int i = 0; i < vector.length; i ++)
                 {
                     sentenceVector[i] += vector[i] * rate;
