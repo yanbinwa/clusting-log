@@ -40,6 +40,9 @@ public class ClustingServiceImpl implements ClustingService
     private ClustingLogStep clustingLogStep = new ClustingLogStep(executorService);
     private TagLogStep tagLogStep = new TagLogStep(executorService);
     private String outputXls = ConfigManager.INSTANCE.getPropertyString(Constants.CLUSTING_LOG_XLS_FILE_KEY);
+    public String[] outputLogType = {Constants.CLUSTING_LOG_OUTPUT_KEY, Constants.CLUSTING_LOG_DROP_KEY, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, 
+                                      Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY, Constants.CLUSTING_LOG_SHORT_KEY, Constants.CLUSTING_LOG_LONG_KEY,
+                                      Constants.CLUSTING_LOG_TOO_MANNY_M_KEY}; 
     
     public ClustingServiceImpl()
     {
@@ -95,22 +98,25 @@ public class ClustingServiceImpl implements ClustingService
         context.setValue(Constants.CLUSTING_LOG_TOO_MANNY_M_KEY, tooManyMList);
         //WITHOUT_VECTOR_WITH_NUD 需要根据NUD进行分类后再输出
         List<Element> withoutVectorWithNudList = summarySelectMap.get(LogSelectType.WITHOUT_VECTOR_WITH_NUD);
-        Map<String, List<Element>> withoutVectorWithNudMap = new HashMap<String, List<Element>>();
-        for (Element element : withoutVectorWithNudList)
+        if (withoutVectorWithNudList != null)
         {
-            String nudLevelInfo = element.getSegmentLevelInfo();
-            if (!StringUtils.isEmpty(nudLevelInfo))
+            Map<String, List<Element>> withoutVectorWithNudMap = new HashMap<String, List<Element>>();
+            for (Element element : withoutVectorWithNudList)
             {
-                List<Element> elements = withoutVectorWithNudMap.get(nudLevelInfo);
-                if (elements == null)
+                String nudLevelInfo = element.getSegmentLevelInfo();
+                if (!StringUtils.isEmpty(nudLevelInfo))
                 {
-                    elements = new ArrayList<Element>();
-                    withoutVectorWithNudMap.put(nudLevelInfo, elements);
+                    List<Element> elements = withoutVectorWithNudMap.get(nudLevelInfo);
+                    if (elements == null)
+                    {
+                        elements = new ArrayList<Element>();
+                        withoutVectorWithNudMap.put(nudLevelInfo, elements);
+                    }
+                    elements.add(element);
                 }
-                elements.add(element);
             }
+            context.setValue(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, withoutVectorWithNudMap);
         }
-        context.setValue(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, withoutVectorWithNudMap);
         //WITHOUT_VECTOR_WITHOUT_NUD
         List<Element> withoutVectorWithoutNudList = summarySelectMap.get(LogSelectType.WITHOUT_VECTOR_WITHOUT_NUD);
         context.setValue(Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY, withoutVectorWithoutNudList);
@@ -129,6 +135,7 @@ public class ClustingServiceImpl implements ClustingService
             try
             {
                 Thread.sleep(Constants.CLUSTING_SERVICE_INIT_INTERVAL);
+                count ++;
             } 
             catch (InterruptedException e)
             {
@@ -183,7 +190,8 @@ public class ClustingServiceImpl implements ClustingService
     {   
         Map<String, List<String>> logsMap = new HashMap<String, List<String>>();
         
-        List<String> logs = getClustingLog(context, Constants.CLUSTING_LOG_OUTPUT_KEY);
+        //这里需要合并cluster与type
+        List<String> logs = getClustingLog(context, Constants.CLUSTING_LOG_OUTPUT_KEY, Constants.CLUSTING_LOG_TYPE_KEY);
         if (logs != null)
         {
             logsMap.put(Constants.CLUSTING_LOG_OUTPUT_KEY, logs);
@@ -237,7 +245,7 @@ public class ClustingServiceImpl implements ClustingService
             logsMap.put(Constants.CLUSTING_LOG_TYPE_KEY, logs);
         }
         
-        XlsUtils.writeLogForXls(outputXls, logsMap);
+        XlsUtils.writeLogForXls(outputXls, logsMap, outputLogType);
     }
     
     @SuppressWarnings("unused")
@@ -282,15 +290,21 @@ public class ClustingServiceImpl implements ClustingService
     }
     
     @SuppressWarnings("unchecked")
-    private List<String> getClustingLog(Context context, String key)
+    private List<String> getClustingLog(Context context, String clusterKey, String typeKey)
     {
         List<String> outputLog = new ArrayList<String>();
-        List<Set<Element>> clusterLog = (List<Set<Element>>) context.getValue(key);
-        if (clusterLog == null)
+        List<Set<Element>> clusterLog = (List<Set<Element>>) context.getValue(clusterKey);
+        List<LogTagEle> clusterLogTag = (List<LogTagEle>) context.getValue(typeKey);
+        if (clusterLog == null || clusterLogTag == null)
         {
             return null;
         }
-        String filePath = getStoreFile(key);
+        else if (clusterLog.size() != clusterLogTag.size())
+        {
+            logger.error("clusterLog size is not equal to clusterLogTag size");
+            return null;
+        }
+        String filePath = getStoreFile(clusterKey);
         for (int i = 0; i < clusterLog.size(); i ++)
         {
             Set<Element> logs = clusterLog.get(i);
@@ -300,6 +314,17 @@ public class ClustingServiceImpl implements ClustingService
             }
         }
         storeFile(outputLog, filePath);
+        
+        outputLog.clear();
+        for (int i = 0; i < clusterLog.size(); i ++)
+        {
+            Set<Element> logs = clusterLog.get(i);
+            LogTagEle tagEle = clusterLogTag.get(i);
+            for (Element log : logs)
+            {
+                outputLog.add(i + Constants.CLUSTING_LOG_SPLIT_KEY + log.getText() + Constants.CLUSTING_LOG_SPLIT_KEY + tagEle.getTagStr());
+            }
+        }
         return outputLog;
     }
     

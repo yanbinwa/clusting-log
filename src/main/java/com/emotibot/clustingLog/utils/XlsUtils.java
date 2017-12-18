@@ -205,4 +205,58 @@ public class XlsUtils
             }
         }
     }
+    
+    public static void writeLogForXls(String xlsFile, Map<String, List<String>> logMap, String[] sheetKey)
+    {
+        File file = new File(xlsFile);
+        if (file.exists())
+        {
+            file.delete();
+        }
+        OutputStream os = null;
+        XSSFWorkbook xssfWorkbook = null;
+        try
+        {
+            os = new FileOutputStream(xlsFile);
+            xssfWorkbook = new XSSFWorkbook();
+            for (int i = 0; i < sheetKey.length; i ++)
+            {
+                String sheetName = sheetKey[i];
+                List<String> logs = logMap.get(sheetName);
+                if (logs == null)
+                {
+                    continue;
+                }
+                Sheet sheet = xssfWorkbook.createSheet(sheetName);
+                int rowCount = 0;
+                for (String log : logs)
+                {
+                    String[] cellStrs = log.split(Constants.CLUSTING_LOG_SPLIT_KEY);
+                    Row row = sheet.createRow(rowCount);
+                    for (int j = 0; j < cellStrs.length; j ++)
+                    {
+                        Cell cell = row.createCell(j);
+                        cell.setCellValue(cellStrs[j]);
+                    }
+                    rowCount ++;
+                }
+            }
+            xssfWorkbook.write(os);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                os.close();
+            }
+            catch (Exception e)
+            {
+                
+            }
+        }
+    }
 }

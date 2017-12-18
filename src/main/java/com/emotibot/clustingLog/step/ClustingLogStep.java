@@ -30,7 +30,7 @@ import com.emotibot.middleware.step.AbstractStep;
 public class ClustingLogStep extends AbstractStep
 {
     private static final int TASK_MAX_NUM = 10;
-    private static final int KMEANS_CLUSTER_NUM = 400;
+    private static final int KMEANS_CLUSTER_NUM = 500;
     private KMeans kMeans = null;
     
     public ClustingLogStep()

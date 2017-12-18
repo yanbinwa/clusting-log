@@ -17,6 +17,7 @@ import com.emotibot.clustingLog.common.element.SortElement;
 import com.emotibot.clustingLog.response.TagLogResponse;
 import com.emotibot.clustingLog.task.MyResponseType;
 import com.emotibot.clustingLog.task.TagLogTask;
+import com.emotibot.clustingLog.utils.WordUtils;
 import com.emotibot.middleware.context.Context;
 import com.emotibot.middleware.response.Response;
 import com.emotibot.middleware.step.AbstractStep;
@@ -138,14 +139,22 @@ public class TagLogStep extends AbstractStep
         //这里需要按照LogTagELe来进行汇总
         List<Set<Element>> clusterEle = (List<Set<Element>>) context.getValue(Constants.CLUSTING_LOG_OUTPUT_KEY);
         Map<LogTagEle, Set<Element>> summaryClusterEleMap = new HashMap<LogTagEle, Set<Element>>();
-        //如果tag为空，不能盲目合并
+        //如果tag为空，不能盲目合并，如果tag中是人名或者地名，也不合并
         List<Set<Element>> emptyEles = new ArrayList<Set<Element>>();
+        List<Set<Element>> specicalEles = new ArrayList<Set<Element>>();
+        List<LogTagEle> specicalTagEle = new ArrayList<LogTagEle>();
         for (Map.Entry<Integer, LogTagEle> entry : indexToTagEleMap.entrySet())
         {
             LogTagEle tagEle = entry.getValue();
             if (tagEle.isEmptyTag())
             {
                 emptyEles.add(clusterEle.get(entry.getKey()));
+                continue;
+            }
+            if (WordUtils.isSpecialWord(tagEle.getNoun()))
+            {
+                specicalEles.add(clusterEle.get(entry.getKey()));
+                specicalTagEle.add(tagEle);
                 continue;
             }
             Set<Element> summaryClusterEles = summaryClusterEleMap.get(tagEle);
@@ -166,6 +175,10 @@ public class TagLogStep extends AbstractStep
         for (Set<Element> elements : emptyEles)
         {
             sortElements.add(new SortElement(new LogTagEle(), elements));
+        }
+        for (int i = 0; i < specicalEles.size(); i ++)
+        {
+            sortElements.add(new SortElement(specicalTagEle.get(i), specicalEles.get(i)));
         }
         Collections.sort(sortElements, new Comparator<SortElement>() {
 

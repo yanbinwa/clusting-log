@@ -10,11 +10,11 @@ public class LogTagEle
 {
     @SerializedName("verb")
     @Expose
-    private String verb;
+    private Word verb;
     
     @SerializedName("noun")
     @Expose
-    private String noun;
+    private Word noun;
     
     @SerializedName("type")
     @Expose
@@ -25,29 +25,29 @@ public class LogTagEle
         
     }
     
-    public LogTagEle(String verb, String noun, LogTagType type)
+    public LogTagEle(Word verb, Word noun, LogTagType type)
     {
         this.verb = verb;
         this.noun = noun;
         this.type = type;
     }
     
-    public void setVerb(String verb)
+    public void setVerb(Word verb)
     {
         this.verb = verb;
     }
     
-    public String getVerb()
+    public Word getVerb()
     {
         return this.verb;
     }
     
-    public void setNoun(String noun)
+    public void setNoun(Word noun)
     {
         this.noun = noun;
     }
     
-    public String getNoun()
+    public Word getNoun()
     {
         return this.noun;
     }
@@ -62,9 +62,31 @@ public class LogTagEle
         return this.type;
     }
     
+    public String getTagStr()
+    {
+        String ret = "";
+        if (verb != null)
+        {
+            ret += verb.getWord() + ",";
+        }
+        if (noun != null)
+        {
+            ret += noun.getWord() + ",";
+        }
+        if (!StringUtils.isEmpty(ret))
+        {
+            ret = ret.substring(0, ret.length() - 1);
+        }
+        else
+        {
+            ret = "无";
+        }
+        return ret;
+    }
+    
     public boolean isEmptyTag()
     {
-        if (StringUtils.isEmpty(verb) && StringUtils.isEmpty(noun))
+        if (verb == null && noun == null)
         {
             return true;
         }

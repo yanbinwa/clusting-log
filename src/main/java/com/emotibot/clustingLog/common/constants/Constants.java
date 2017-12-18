@@ -14,15 +14,15 @@ public class Constants
     
     public static final String CLUSTING_LOG_RETURN_KEY = "CLUSTING_LOG_RETURN";
     
-    public static final String CLUSTING_LOG_SHORT_KEY = "SHORT";
-    public static final String CLUSTING_LOG_LONG_KEY = "LONG";
-    public static final String CLUSTING_LOG_WITHOUT_V_N_KEY = "WITHOUT_V_N";
-    public static final String CLUSTING_LOG_TOO_MANNY_M_KEY = "TOO_MANNY_M";
-    public static final String CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY = "WITHOUT_VECTOR_WITH_NUD";
-    public static final String CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY = "WITHOUT_VECTOR_WITHOUT_NUD";
-    public static final String CLUSTING_LOG_OUTPUT_KEY = "OUTPUT";
-    public static final String CLUSTING_LOG_DROP_KEY = "DROP";
-    public static final String CLUSTING_LOG_TYPE_KEY = "TYPE";
+    public static final String CLUSTING_LOG_SHORT_KEY = "过短日志";
+    public static final String CLUSTING_LOG_LONG_KEY = "过长日志";
+    public static final String CLUSTING_LOG_WITHOUT_V_N_KEY = "无动词和名词日志";
+    public static final String CLUSTING_LOG_TOO_MANNY_M_KEY = "过多语气词日志";
+    public static final String CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY = "无法分类具有同义词日志";
+    public static final String CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY = "无法分类不具有同义词日志";
+    public static final String CLUSTING_LOG_OUTPUT_KEY = "日志分类";
+    public static final String CLUSTING_LOG_DROP_KEY = "日志分类中小类日志总和";
+    public static final String CLUSTING_LOG_TYPE_KEY = "日志分类对应的类别";
     
     public static final String CLUSTING_LOG_SHORT_FILE_KEY = "CLUSTING_LOG_SHORT_FILE";
     public static final String CLUSTING_LOG_LONG_FILE_KEY = "CLUSTING_LOG_LONG_FILE";
@@ -47,11 +47,13 @@ public class Constants
     public static final float ADJUST_NONE_1_RATE = 1.5f;
     public static final float ADJUST_MODAL_RATE = 0.1f;
     public static final float ADJUST_PRONOUN_RATE = 0.1f;
+    public static final float ADJUST_PERSON_RATE = 1.5f;
+    public static final float ADJUST_LOCATION_RATE = 1.5f;
         
     public static final float CHOOSE_THRESHOLD = 0.001f;
     public static final String APPID_KEY = "APPID_KEY";
     
     //clustingService
-    public static final int CLUSTING_SERVICE_INIT_NUM = 3;
+    public static final int CLUSTING_SERVICE_INIT_NUM = 10;
     public static final int CLUSTING_SERVICE_INIT_INTERVAL = 1000;
 }

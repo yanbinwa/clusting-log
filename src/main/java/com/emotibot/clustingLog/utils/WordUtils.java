@@ -13,8 +13,10 @@ public class WordUtils
 {
     private static final String[] VERB = {"v", "vf", "vn"};
     private static final String[] VERB_1 = {"vi", "vyou"};
-    private static final String[] NOUN = {"n", "nud", "nz", "nr", "ns", "nis"};
-    private static final String[] NOUN_1 = {"nt", "nf", "ng", "nnt", "nba", "nt", "nrf", "nx"};
+    private static final String[] NOUN = {"n", "nud", "nz", "nr", "nis"};
+    private static final String[] NOUN_1 = {"nt", "nf", "ng", "nnt", "nba", "nt", "nx"};
+    private static final String[] PERSON = {"nr", "nrf"};
+    private static final String[] LOCATION = {"ns"};
     private static final String[] MODAL = {"e", "y"};
     private static final String[] PRONOUN = {"rr"};
     
@@ -22,8 +24,20 @@ public class WordUtils
     private static Set<String> verbSet_1;
     private static Set<String> nounSet;
     private static Set<String> nounSet_1;
+    private static Set<String> personSet;
     private static Set<String> modalSet;
     private static Set<String> pronounSet;
+    private static Set<String> locationSet;
+    
+    public static final String PERSON_TEXT = "人名/角色";
+    public static final String PERSON_TAG = "persion";
+    public static final String LOCATION_TEXT = "地名";
+    public static final String LOCATION_TAG = "location";
+    public static final String APP_TEXT = "APP";
+    public static final String APP_TAG = "app";
+    
+    public static final String[] SPECIAL_TAGS = {PERSON_TAG, LOCATION_TAG, APP_TAG};
+    private static Set<String> specitalTagSet;
     
     static
     {
@@ -51,6 +65,12 @@ public class WordUtils
             nounSet.add(noun);
         }
         
+        personSet = new HashSet<String>();
+        for(String noun : PERSON)
+        {
+            personSet.add(noun);
+        }
+        
         modalSet = new HashSet<String>();
         for(String modal : MODAL)
         {
@@ -61,6 +81,18 @@ public class WordUtils
         for(String modal : PRONOUN)
         {
             pronounSet.add(modal);
+        }
+        
+        locationSet = new HashSet<String>();
+        for(String modal : LOCATION)
+        {
+            locationSet.add(modal);
+        }
+        
+        specitalTagSet = new HashSet<String>();
+        for(String modal : SPECIAL_TAGS)
+        {
+            specitalTagSet.add(modal);
         }
     }
     
@@ -86,6 +118,20 @@ public class WordUtils
     public static boolean isNoun(String pos)
     {
         if (nounSet.contains(pos) || nounSet_1.contains(pos))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isPerson(Word word)
+    {
+        return isPerson(word.getPos());
+    }
+    
+    public static boolean isPerson(String pos)
+    {
+        if (personSet.contains(pos))
         {
             return true;
         }
@@ -120,6 +166,34 @@ public class WordUtils
         return false;
     }
     
+    public static boolean isLocation(Word word)
+    {
+        return isLocation(word.getPos(), word.getWord());
+    }
+    
+    public static boolean isLocation(String pos, String text)
+    {
+        if (locationSet.contains(pos) || CityUtils.cityNameSet.contains(text))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isSpecialWord(Word word)
+    {
+        if (word == null)
+        {
+            return false;
+        }
+        return isSpecialWord(word.getPos());
+    }
+    
+    public static boolean isSpecialWord(String pos)
+    {
+        return specitalTagSet.contains(pos);
+    }
+    
     public static float getAdjustRate(Word word)
     {
         return getAdjustRate(word.getPos());
@@ -150,6 +224,14 @@ public class WordUtils
         else if (pronounSet.contains(pos))
         {
             return Constants.ADJUST_PRONOUN_RATE;
+        }
+        else if (personSet.contains(pos))
+        {
+            return Constants.ADJUST_PERSON_RATE;
+        }
+        else if (locationSet.contains(pos))
+        {
+            return Constants.ADJUST_LOCATION_RATE;
         }
         return 1.0f;
     }

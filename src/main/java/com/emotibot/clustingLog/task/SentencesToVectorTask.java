@@ -89,11 +89,12 @@ public class SentencesToVectorTask extends AbstractTask
             setResultElementMap(element, LogSelectType.LONG_LOG);
             return;
         }
-        //3. 句子中没有动词和名词
+        //3. 句子中没有动词,名词和人名
         boolean tag = false;
         for (Segment segment : element.getSegments())
         {
-            if (WordUtils.isVerb(segment.getPos()) || WordUtils.isNoun(segment.getPos()))
+            if (WordUtils.isVerb(segment.getPos()) || WordUtils.isNoun(segment.getPos()) 
+                    || WordUtils.isPerson(segment.getPos()) || WordUtils.isLocation(segment.getPos(), segment.getOrgWord()))
             {
                 tag = true;
                 break;
