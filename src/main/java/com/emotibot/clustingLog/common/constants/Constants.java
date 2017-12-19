@@ -23,6 +23,7 @@ public class Constants
     public static final String CLUSTING_LOG_OUTPUT_KEY = "日志分类";
     public static final String CLUSTING_LOG_DROP_KEY = "日志分类中小类日志总和";
     public static final String CLUSTING_LOG_TYPE_KEY = "日志分类对应的类别";
+    public static final String CLUSTING_LOG_EMPTY_TAG_KEY = "日志分类无对应类别";
     
     public static final String CLUSTING_LOG_SHORT_FILE_KEY = "CLUSTING_LOG_SHORT_FILE";
     public static final String CLUSTING_LOG_LONG_FILE_KEY = "CLUSTING_LOG_LONG_FILE";
@@ -33,6 +34,7 @@ public class Constants
     public static final String CLUSTING_LOG_OUTPUT_FILE_KEY = "CLUSTING_LOG_OUTPUT_FILE";
     public static final String CLUSTING_LOG_DROP_FILE_KEY = "CLUSTING_LOG_DROP_FILE";
     public static final String CLUSTING_LOG_TYPE_FILE_KEY = "CLUSTING_LOG_TYPE_FILE";
+    public static final String CLUSTING_LOG_EMPTY_TAG_FILE_KEY = "CLUSTING_LOG_EMPTY_TAG_FILE";
     
     public static final String CLUSTING_LOG_XLS_FILE_KEY ="CLUSTING_LOG_XLS_FILE";
     public static final String CLUSTING_LOG_SPLIT_KEY = ": ";

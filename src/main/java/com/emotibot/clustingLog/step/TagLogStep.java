@@ -168,13 +168,10 @@ public class TagLogStep extends AbstractStep
         
         //按照由多到少进行排序
         List<SortElement> sortElements = new ArrayList<SortElement>();
+        List<SortElement> sortEmptyTagElements = new ArrayList<SortElement>();
         for (Map.Entry<LogTagEle, Set<Element>> entry : summaryClusterEleMap.entrySet())
         {
             sortElements.add(new SortElement(entry.getKey(), entry.getValue()));
-        }
-        for (Set<Element> elements : emptyEles)
-        {
-            sortElements.add(new SortElement(new LogTagEle(), elements));
         }
         for (int i = 0; i < specicalEles.size(); i ++)
         {
@@ -200,7 +197,6 @@ public class TagLogStep extends AbstractStep
             }
             
         });
-        
         List<LogTagEle> logTagList = new ArrayList<LogTagEle>();
         List<Set<Element>> clusterResultEle = new ArrayList<Set<Element>>();
         for (SortElement sortElement : sortElements)
@@ -208,9 +204,39 @@ public class TagLogStep extends AbstractStep
             logTagList.add(sortElement.getTagEle());
             clusterResultEle.add(sortElement.getElements());
         }
-        
         context.setValue(Constants.CLUSTING_LOG_OUTPUT_KEY, clusterResultEle);
         context.setValue(Constants.CLUSTING_LOG_TYPE_KEY, logTagList);
+        
+        for (Set<Element> elements : emptyEles)
+        {
+            sortEmptyTagElements.add(new SortElement(new LogTagEle(), elements));
+        }
+        Collections.sort(sortEmptyTagElements, new Comparator<SortElement>() {
+
+            @Override
+            public int compare(SortElement o1, SortElement o2)
+            {
+                if (o1.getElements().size() > o2.getElements().size())
+                {
+                    return -1;
+                }
+                else if (o1.getElements().size() < o2.getElements().size())
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            
+        });
+        List<Set<Element>> clusterResultEmptyTagEle = new ArrayList<Set<Element>>();
+        for (SortElement sortElement : sortEmptyTagElements)
+        {
+            clusterResultEmptyTagEle.add(sortElement.getElements());
+        }
+        context.setValue(Constants.CLUSTING_LOG_EMPTY_TAG_KEY, clusterResultEmptyTagEle);
     }
     
 }

@@ -41,8 +41,8 @@ public class ClustingServiceImpl implements ClustingService
     private TagLogStep tagLogStep = new TagLogStep(executorService);
     private String outputXls = ConfigManager.INSTANCE.getPropertyString(Constants.CLUSTING_LOG_XLS_FILE_KEY);
     public String[] outputLogType = {Constants.CLUSTING_LOG_OUTPUT_KEY, Constants.CLUSTING_LOG_DROP_KEY, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITH_NUD_KEY, 
-                                      Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY, Constants.CLUSTING_LOG_SHORT_KEY, Constants.CLUSTING_LOG_LONG_KEY,
-                                      Constants.CLUSTING_LOG_TOO_MANNY_M_KEY}; 
+                                     Constants.CLUSTING_LOG_EMPTY_TAG_KEY, Constants.CLUSTING_LOG_WITHOUT_VECTOR_WITHOUT_NUD_KEY, Constants.CLUSTING_LOG_SHORT_KEY, 
+                                     Constants.CLUSTING_LOG_LONG_KEY, Constants.CLUSTING_LOG_TOO_MANNY_M_KEY}; 
     
     public ClustingServiceImpl()
     {
@@ -246,6 +246,12 @@ public class ClustingServiceImpl implements ClustingService
             logsMap.put(Constants.CLUSTING_LOG_TYPE_KEY, logs);
         }
         
+        logs = getClustingLog3(context, Constants.CLUSTING_LOG_EMPTY_TAG_KEY);
+        if (logs != null)
+        {
+            logsMap.put(Constants.CLUSTING_LOG_EMPTY_TAG_KEY, logs);
+        }
+        
         XlsUtils.writeLogForXls(outputXls, logsMap, outputLogType);
     }
     
@@ -281,6 +287,9 @@ public class ClustingServiceImpl implements ClustingService
             break;
         case Constants.CLUSTING_LOG_TYPE_KEY:
             filePathKey = Constants.CLUSTING_LOG_TYPE_FILE_KEY;
+            break;
+        case Constants.CLUSTING_LOG_EMPTY_TAG_KEY:
+            filePathKey = Constants.CLUSTING_LOG_EMPTY_TAG_FILE_KEY;
             break;
         }
         if (StringUtils.isEmpty(filePathKey))
@@ -369,6 +378,32 @@ public class ClustingServiceImpl implements ClustingService
             for (Element element : elements)
             {
                 outputLog.add(levelInfo + Constants.CLUSTING_LOG_SPLIT_KEY + element.getText()); 
+            }
+        }
+        storeFile(outputLog, filePath);
+        return outputLog;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<String> getClustingLog3(Context context, String key)
+    {
+        List<String> outputLog = new ArrayList<String>();
+        List<Set<Element>> clusterLogList = (List<Set<Element>>) context.getValue(key);
+        if (clusterLogList == null)
+        {
+            return null;
+        }
+        String filePath = getStoreFile(key);
+        for (int i = 0; i < clusterLogList.size(); i ++)
+        {
+            Set<Element> elements = clusterLogList.get(i);
+            if (elements == null)
+            {
+                continue;
+            }
+            for (Element element : elements)
+            {
+                outputLog.add(i + Constants.CLUSTING_LOG_SPLIT_KEY + element.getText());
             }
         }
         storeFile(outputLog, filePath);
