@@ -19,6 +19,8 @@ public class WordUtils
     private static final String[] LOCATION = {"ns"};
     private static final String[] MODAL = {"e", "y"};
     private static final String[] PRONOUN = {"rr"};
+    private static final String[] QUANTIFIER = {"q"};
+    private static final String[] NUMERAL = {"m"};
     
     private static Set<String> verbSet;
     private static Set<String> verbSet_1;
@@ -28,15 +30,25 @@ public class WordUtils
     private static Set<String> modalSet;
     private static Set<String> pronounSet;
     private static Set<String> locationSet;
+    private static Set<String> quantifierSet;
+    private static Set<String> numeralSet;
     
-    public static final String PERSON_TEXT = "人名/角色";
+    public static final String PERSON_TEXT = "含人名/角色";
     public static final String PERSON_TAG = "persion";
-    public static final String LOCATION_TEXT = "地名";
+    public static final String LOCATION_TEXT = "含地名";
     public static final String LOCATION_TAG = "location";
-    public static final String APP_TEXT = "APP";
+    public static final String APP_TEXT = "含APP";
     public static final String APP_TAG = "app";
+    public static final String QUANTIFIER_TEXT = "含集/部/季";
+    public static final String QUANTIFIER_TAG = "quantifier";
+    public static final String VIDEO_TEXT = "含电影/电视剧";
+    public static final String VIDEO_TAG = "video";
+    public static final String NUMERAL_TEXT = "含数字";
+    public static final String NUMERAL_TAG = "numeral";
+    public static final String AREA_TEXT = "含国家";
+    public static final String AREA_TAG = "area";
     
-    public static final String[] SPECIAL_TAGS = {PERSON_TAG, LOCATION_TAG, APP_TAG};
+    public static final String[] SPECIAL_TAGS = {PERSON_TAG, LOCATION_TAG, APP_TAG, QUANTIFIER_TAG, VIDEO_TAG, NUMERAL_TAG, AREA_TAG};
     private static Set<String> specitalTagSet;
     
     static
@@ -89,10 +101,22 @@ public class WordUtils
             locationSet.add(modal);
         }
         
+        quantifierSet = new HashSet<String>();
+        for(String modal : QUANTIFIER)
+        {
+            quantifierSet.add(modal);
+        }
+        
         specitalTagSet = new HashSet<String>();
         for(String modal : SPECIAL_TAGS)
         {
             specitalTagSet.add(modal);
+        }
+
+        numeralSet = new HashSet<String>();
+        for(String modal : NUMERAL)
+        {
+            numeralSet.add(modal);
         }
     }
     
@@ -174,6 +198,34 @@ public class WordUtils
     public static boolean isLocation(String pos, String text)
     {
         if (locationSet.contains(pos) || CityUtils.cityNameSet.contains(text))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isQuantifier(Word word)
+    {
+        return isQuantifier(word.getPos());
+    }
+    
+    public static boolean isQuantifier(String pos)
+    {
+        if (quantifierSet.contains(pos))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isNumeral(Word word)
+    {
+        return isNumeral(word.getPos());
+    }
+    
+    public static boolean isNumeral(String pos)
+    {
+        if (numeralSet.contains(pos))
         {
             return true;
         }

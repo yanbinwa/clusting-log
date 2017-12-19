@@ -143,6 +143,7 @@ public class ClustingServiceImpl implements ClustingService
                 return;
             }
         }
+        logger.info("clusting service is init");
     }
     
     private void getLogTag(Context context)
