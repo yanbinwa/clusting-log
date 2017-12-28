@@ -55,7 +55,7 @@ public class ClustingServiceImpl implements ClustingService
     {
         logger.info("");
         logger.info("-------------- start -------------");
-        Set<String> sentences = XlsUtils.loadLogFromXls(csvFile);
+        Set<String> sentences = XlsUtils.loadLogFromXls1(csvFile);
         if (sentences == null || sentences.isEmpty())
         {
             return null;

@@ -6,7 +6,7 @@ public class ClustingServiceImplTest
 {
 
     public static final String CSV_FILE = "/Users/emotibot/Documents/workspace/other/clusting-log/file/长虹日志.csv";
-    public static final String XLS_FILE = "/Users/emotibot/Documents/workspace/other/clusting-log/file/长虹日志.xlsx";
+    public static final String XLS_FILE = "/Users/emotibot/Documents/workspace/other/clusting-log/file/对话日志.xlsx";
     
     @Test
     public void test()

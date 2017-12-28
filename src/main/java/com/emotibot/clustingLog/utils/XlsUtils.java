@@ -150,6 +150,59 @@ public class XlsUtils
         }
     }
     
+    public static Set<String> loadLogFromXls1(String xlsFile)
+    {
+        InputStream is = null;
+        XSSFWorkbook xssfWorkbook = null;
+        try
+        {
+            Set<String> sentences = new HashSet<String>();
+            is = new FileInputStream(xlsFile);
+            xssfWorkbook = new XSSFWorkbook(is);
+            XSSFSheet xssfSheet = xssfWorkbook.getSheetAt(0);
+            if (xssfSheet == null)
+            {
+                return null;
+            }
+            int count = 0;
+            for (int i = 1; i <= xssfSheet.getLastRowNum(); i ++)
+            {
+                XSSFRow xssfRow = xssfSheet.getRow(i);
+                if (xssfRow != null)
+                {
+                    XSSFCell output = xssfRow.getCell(0);
+                    String outputStr = output.getStringCellValue();
+                    if (!StringUtils.isEmpty(outputStr) && !sentences.contains(outputStr))
+                    {
+                        sentences.add(outputStr);
+                        count ++;
+                        if (count > MAX_LOG_NUM)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            return sentences;
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+        finally
+        {
+            try
+            {
+                is.close();
+            } 
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+    
     //Map的key为sheetName，value为日志
     public static void writeLogForXls(String xlsFile, Map<String, List<String>> logMap)
     {
