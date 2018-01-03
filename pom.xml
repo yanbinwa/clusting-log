@@ -39,7 +39,6 @@
     <dependency>
 	  <groupId>net.sf.opencsv</groupId>
 	  <artifactId>opencsv</artifactId>
-	  <scope>test</scope>
 	  <version>2.3</version>
 	</dependency>
 	<dependency>
@@ -60,7 +59,7 @@
   </dependencies>
   
   <build>
-    <finalName>musicService</finalName>
+    <finalName>clusting-log</finalName>
      <resources>  
       <resource>  
         <directory>src/main/resources</directory>  

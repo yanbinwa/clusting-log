@@ -21,6 +21,9 @@ public class WordUtils
     private static final String[] PRONOUN = {"rr"};
     private static final String[] QUANTIFIER = {"q"};
     private static final String[] NUMERAL = {"m"};
+    //后加的
+    private static final String[] ADJECTIVE = {"a", "an"};
+    private static final String[] OTHER = {"t", "s", "i"};
     
     private static Set<String> verbSet;
     private static Set<String> verbSet_1;
@@ -32,6 +35,8 @@ public class WordUtils
     private static Set<String> locationSet;
     private static Set<String> quantifierSet;
     private static Set<String> numeralSet;
+    private static Set<String> adjectiveSet;
+    private static Set<String> otherSet;
     
     public static final String PERSON_TEXT = "含人名/角色";
     public static final String PERSON_TAG = "persion";
@@ -117,6 +122,18 @@ public class WordUtils
         for(String modal : NUMERAL)
         {
             numeralSet.add(modal);
+        }
+        
+        adjectiveSet = new HashSet<String>();
+        for(String adjective : ADJECTIVE)
+        {
+            adjectiveSet.add(adjective);
+        }
+        
+        otherSet = new HashSet<String>();
+        for(String other : OTHER)
+        {
+            otherSet.add(other);
         }
     }
     
@@ -204,6 +221,15 @@ public class WordUtils
         return false;
     }
     
+    public static boolean isLocation(String pos)
+    {
+        if (locationSet.contains(pos))
+        {
+            return true;
+        }
+        return false;
+    }
+    
     public static boolean isQuantifier(Word word)
     {
         return isQuantifier(word.getPos());
@@ -226,6 +252,34 @@ public class WordUtils
     public static boolean isNumeral(String pos)
     {
         if (numeralSet.contains(pos))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isAdjective(Word word)
+    {
+        return isAdjective(word.getPos());
+    }
+    
+    public static boolean isAdjective(String pos)
+    {
+        if (adjectiveSet.contains(pos))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isOther(Word word)
+    {
+        return isOther(word.getPos());
+    }
+    
+    public static boolean isOther(String pos)
+    {
+        if (otherSet.contains(pos))
         {
             return true;
         }
