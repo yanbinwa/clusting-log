@@ -30,8 +30,8 @@ public class XlsUtils
 {
     private static Logger logger = Logger.getLogger(XlsUtils.class);
     private static final int MAX_LOG_NUM = 100000;
-    private static final int LOG_COLUME = 5;
-    private static final int OUTPUT_COLUME = 4;
+    private static final int LOG_COLUME = 3;
+    private static final int OUTPUT_COLUME = 2;
     private static final String EMPTY_OUTPUT = "{}";
     
     public static Set<String> loadLogFromCsv(String csvFile)

@@ -19,6 +19,7 @@ import com.emotibot.middleware.task.AbstractTask;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
 
+@Deprecated
 public class SentencesToVectorTask2 extends AbstractTask
 {
     private static Logger logger = Logger.getLogger(SentencesToVectorTask2.class);

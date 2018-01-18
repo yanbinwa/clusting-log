@@ -29,6 +29,7 @@ import com.emotibot.middleware.utils.StringUtils;
 import au.com.bytecode.opencsv.CSVReader;
 import jsat.classifiers.DataPoint;
 
+@Deprecated
 public class ClustingService2Impl implements ClustingService
 {
     private static final int MAX_LOG_NUM = 50;

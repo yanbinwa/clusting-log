@@ -17,6 +17,8 @@ import com.emotibot.middleware.response.Response;
 import com.emotibot.middleware.response.nlu.NLUResponse;
 import com.emotibot.middleware.response.nlu.Segment;
 import com.emotibot.middleware.task.AbstractTask;
+import com.hankcs.hanlp.seg.common.Term;
+import com.hankcs.hanlp.tokenizer.StandardTokenizer;
 
 /**
  * 首先依次调用NLU，获取分词结果，之后将结果汇总到Response中
@@ -65,6 +67,7 @@ public class SentencesToVectorTask extends AbstractTask
         for (String sentence : sentences)
         {
             NLUResponse nlpResponse = NlpUtils.getNlp(sentence);
+            nlpResponse = adjustNluResponse(nlpResponse);
             float[] vector = getVector(nlpResponse);
             Element element = new Element(sentence, vector, nlpResponse.getSegment());
             if (isValidElement(element))
@@ -73,6 +76,44 @@ public class SentencesToVectorTask extends AbstractTask
             }
         }
         return new SentencesToVectorResponse(resultElementMap);
+    }
+    
+    /**
+     * 1. 如果nud长度为1，调用hanlp回归词性
+     * 
+     * 2. 如果句子中有nud内容全为数字（0-9，一-十），则统一制为m
+     * 
+     * @param nlpResponse
+     * @return
+     */
+    private NLUResponse adjustNluResponse(NLUResponse nlpResponse)
+    {
+        if (nlpResponse == null)
+        {
+            return null;
+        }
+        List<Segment> segments = nlpResponse.getSegment();
+        if (segments == null)
+        {
+            return nlpResponse;
+        }
+        for (Segment segment : segments)
+        {
+            if (segment.getPos().equals("nud"))
+            {
+                if (segment.getOrgWord().length() == 1)
+                {
+                    List<Term> termList = StandardTokenizer.segment(segment.getOrgWord());
+                    Term term = termList.get(0);
+                    segment.setPos(term.nature.name());
+                }
+                else if (WordUtils.isAllNum(segment.getOrgWord()))
+                {
+                    segment.setPos("m");
+                }
+            }
+        }
+        return nlpResponse;
     }
     
     private void selectLog(Element element)

@@ -24,6 +24,7 @@ import jsat.linear.VecPaired;
 import jsat.linear.distancemetrics.EuclideanDistance;
 import jsat.linear.vectorcollection.DefaultVectorCollectionFactory;
 
+@Deprecated
 public class ClustingLogStep2 extends AbstractStep
 {
 

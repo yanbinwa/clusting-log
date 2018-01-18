@@ -3,6 +3,8 @@ package com.emotibot.clustingLog.utils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.emotibot.clustingLog.common.constants.Constants;
 import com.emotibot.clustingLog.common.element.Element;
@@ -55,6 +57,8 @@ public class WordUtils
     
     public static final String[] SPECIAL_TAGS = {PERSON_TAG, LOCATION_TAG, APP_TAG, QUANTIFIER_TAG, VIDEO_TAG, NUMERAL_TAG, AREA_TAG};
     private static Set<String> specitalTagSet;
+    
+    private static final String num_parttern = "^[0-9]*$";
     
     static
     {
@@ -340,6 +344,13 @@ public class WordUtils
             return Constants.ADJUST_LOCATION_RATE;
         }
         return 1.0f;
+    }
+    
+    public static boolean isAllNum(String str)
+    {
+        Pattern pattern = Pattern.compile(num_parttern);
+        Matcher matcher = pattern.matcher(str);
+        return matcher.matches();
     }
     
     public static boolean isContainNud(Element element)

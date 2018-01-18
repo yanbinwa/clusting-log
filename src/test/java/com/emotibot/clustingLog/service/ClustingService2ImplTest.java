@@ -2,6 +2,7 @@ package com.emotibot.clustingLog.service;
 
 import org.junit.Test;
 
+@Deprecated
 public class ClustingService2ImplTest
 {
 
